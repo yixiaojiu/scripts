@@ -5,6 +5,7 @@
  * cron: 11 0 8,9 * * *
  */
 
+const $ = new Env('第二课堂成绩单')
 const Axios = require('axios')
 // require('dotenv').config()
 
@@ -91,3 +92,5 @@ async function sleep(time) {
     setTimeout(() => resolved(), time)
   })
 }
+
+function Env() {}
