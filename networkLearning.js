@@ -29,16 +29,18 @@ main(users)
 async function main(users) {
   let i = 1
   for (const user of users) {
-    log(`🚗========第${i}个账号========\n\n`)
-
+    log(`\n🚗========第${i}个账号========\n`)
+    log(`当前账号🍔 ${user}`)
     const { success, data: res } = await getScore(user)
     if (!success) {
       log(`🚑${user} 有问题`)
+      i++
       continue
     }
     log(`当前积分🥠${res.data}`)
     if (res.data > 90) {
       log(`当前账号积分${res.data}, 已经达标`)
+      i++
       continue
     }
 
@@ -175,7 +177,7 @@ async function getScore(user) {
         key_session: user
       }
     })
-    if (!data.data) {
+    if (data.errMsg === '微信号未绑定用户') {
       return {
         success: false,
         data: null
