@@ -5,7 +5,7 @@
  * cron: 11 0 8,9 * * *
  */
 
-const $ = new Env('第二课堂成绩单')
+const $ = new Env('小米运动刷步数')
 const Axios = require('axios')
 // require('dotenv').config()
 
