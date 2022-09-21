@@ -38,7 +38,7 @@ async function main(users) {
       continue
     }
     log(`当前积分🥠${res.data}`)
-    if (res.data > 90) {
+    if (res.data > 95) {
       log(`当前账号积分${res.data}, 已经达标`)
       i++
       continue
@@ -158,7 +158,7 @@ async function handleSingleChoice(user, question) {
 async function handleMultipleChoice(user, question) {
   const answers = question.optionList.map(option => option.id)
   const reg = /（）*/g
-  if (question.queContent.match(reg).length !== answers.length) {
+  if (!question.queContent.match(reg) || question.queContent.match(reg).length !== answers.length) {
     return true
   }
   const { success, data } = await submitAnswers(user, question.id, answers)
