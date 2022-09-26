@@ -4,7 +4,7 @@
  * cron: 10 5 8,19 * * *
  */
 
-const $ = new Env('第二课堂成绩单')
+const $ = new Env('青年大学习')
 
 import { exit } from 'process'
 // import { config } from 'dotenv'
