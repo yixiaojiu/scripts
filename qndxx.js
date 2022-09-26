@@ -1,17 +1,14 @@
 /**
  * 应用: 青年大学习公众号
  * 环境变量: qndxxToken="token@token", 多账号用@分割
- * cron: 10 5 8,19 * * *
+ * cron: 10 5 8 * * *
  */
 
 const $ = new Env('青年大学习')
 
-import { exit } from 'process'
-// import { config } from 'dotenv'
-// config()
-import axios from 'axios'
+require('dotenv').config()
 
-const request = axios.create({
+const request = require('axios').default.create({
   baseURL: 'http://dxx.ahyouth.org.cn',
   headers: {
     'User-Agent':
@@ -22,45 +19,47 @@ const request = axios.create({
 const qndxxToken = process.env.qndxxToken
 if (!qndxxToken) {
   console.log('请填写qndxxToken环境变量！！！')
-  exit(0)
+  process.exit(0)
 }
+
 const tokens = qndxxToken.split('@')
 console.log(`共${tokens.length}个账号`)
 
-await main()
+main()
 
 async function main() {
   let i = 1
   for (const token of tokens) {
     console.log(`\n🚗========第${i}个账号========\n`)
+    i++
     const { data: userInfoData, error: userInfoError } = await getUserInfo(token)
     if (userInfoError) {
       continue
     }
     console.log('当前账号:' + userInfoData.content.nickname)
 
-    await wait(1000)
+    await wait(2000)
 
     // 当期学习
     const { error: newLearnError } = await newLearn(token)
     if (newLearnError) {
       continue
     }
-    await wait(1000)
+    await wait(2000)
 
     // 往期学习
     const { error: oldLearnError } = await oldLearn(token)
     if (oldLearnError) {
       continue
     }
-    await wait(1000)
+    await wait(2000)
 
     // 阅读文章
     const { error: taskReadArticleError } = await taskReadArticle(token)
     if (taskReadArticleError) {
       continue
     }
-    await wait(1000)
+    await wait(2000)
 
     // 获取每日任务
     const { data: todayTaskData, error: getTodayTaskError } = await getTodayTask(token)
@@ -199,7 +198,7 @@ async function taskReadArticle(token) {
       error: true
     }
   }
-  await wait(1000)
+  await wait(2000)
   const { data, error } = await getArticleList(token, getRandomInt(1, firstData.lists.last_page))
   if (error) {
     return {
@@ -207,10 +206,16 @@ async function taskReadArticle(token) {
     }
   }
   const articleIds = data.lists.data.map(item => item.id)
-  await wait(1000)
+  await wait(2000)
+
+  let i = 1
   for (const id of articleIds) {
+    if (i > 5) {
+      break
+    }
     await readArticle(token, id)
-    await wait(1000)
+    i++
+    await wait(2000)
   }
   return {
     error: false
