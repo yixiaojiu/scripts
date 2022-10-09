@@ -2,10 +2,12 @@ lockfileVersion: 5.4
 
 specifiers:
   axios: ^0.27.2
+  dayjs: ^1.11.5
   dotenv: ^16.0.1
 
 dependencies:
   axios: 0.27.2
+  dayjs: 1.11.5
   dotenv: 16.0.1
 
 packages:
@@ -28,6 +30,10 @@ packages:
     engines: {node: '>= 0.8'}
     dependencies:
       delayed-stream: 1.0.0
+    dev: false
+
+  /dayjs/1.11.5:
+    resolution: {integrity: sha512-CAdX5Q3YW3Gclyo5Vpqkgpj8fSdLQcRuzfX6mC6Phy0nfJ0eGYOeS7m4mt2plDWLAtA4TqTakvbboHvUxfe4iA==}
     dev: false
 
   /delayed-stream/1.0.0:

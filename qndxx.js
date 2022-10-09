@@ -6,7 +6,7 @@
 
 const $ = new Env('青年大学习')
 
-require('dotenv').config()
+// require('dotenv').config()
 
 const request = require('axios').default.create({
   baseURL: 'http://dxx.ahyouth.org.cn',
