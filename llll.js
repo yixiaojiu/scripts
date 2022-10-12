@@ -2,7 +2,7 @@
  * 环境变量llllpara=para@para
  * cron: 11 2 6 * * *
  */
-const $ = new Env('第二课堂成绩单')
+const $ = new Env('流量来啦')
 
 // require('dotenv').config()
 const { wait } = require('./utils')
@@ -28,10 +28,9 @@ if (!para) {
 }
 
 const tokens = []
+const users = []
 
 para.split('@').forEach(val => {
-  console.log(val)
-  console.log(Decrypt(val))
   try {
     const phone = JSON.parse(Decrypt(val)).phone
     if (phone) {
@@ -54,21 +53,161 @@ async function main() {
   for (const token of tokens) {
     console.log(`\n🚗========第${i}个账号========\n`)
     i++
+    const user = {}
+    user.token = token
+    // 获取用户信息
+    try {
+      const { data } = await request.post('/ah_red_come/app/getuser', {
+        para: JSONStringifyEncrypt({
+          queryDate: getFormatTime(),
+          phone: token
+        })
+      })
+
+      const res = JSONParseDecrypt(data)
+      const nickname = res.data.nickname
+      console.log(`🍚昵称:${nickname}`)
+      user.openid = res.data.openid
+      user.nickname = nickname
+    } catch (error) {
+      console.log(error.message)
+      continue
+    }
+    await wait(2123)
+
+    // 签到
     try {
       const { data } = await request.post('/ah_red_come/app/userSign', {
-        para: Encrypt(
-          JSON.stringify({
-            queryDate: dayjs().format('YYYY-MM-DD HH:mm:ss'),
-            phone: token
-          })
-        )
+        para: JSONStringifyEncrypt({
+          queryDate: getFormatTime(),
+          phone: token
+        })
       })
-      const res = JSON.parse(Decrypt(data))
+
+      const res = JSONParseDecrypt(data)
       console.log(res.msg)
     } catch (error) {
       console.log(error.message)
+      continue
     }
-    await wait(5124)
+    await wait(3214)
+
+    //获取红包码
+    try {
+      const { data } = await request.post('/ah_red_come/app/sendRedPackage', {
+        para: JSONStringifyEncrypt({
+          queryDate: getFormatTime(),
+          phone: token,
+          openid: user.openid
+        })
+      })
+      const res = JSONParseDecrypt(data)
+      user.giveseqid = res.data
+    } catch (error) {
+      console.log(error.message)
+      continue
+    }
+    await wait(2320)
+
+    users.push(user)
+  }
+
+  await wait(3313)
+  console.log('\n\n🥗开始开红包')
+  i = 1
+  for (const user of users) {
+    console.log(`\n🚗========第${i}个账号========\n`)
+    i++
+    console.log(`当前账号:${user.nickname}`)
+
+    // 拆红包
+    for (const item of users) {
+      await wait(3245)
+      // 如果是自己就跳过
+      if (item.openid === user.openid) {
+        continue
+      }
+
+      try {
+        const { data } = await request.post('/ah_red_come/app/getRedPackageById', {
+          para: JSONStringifyEncrypt({
+            queryDate: getFormatTime(),
+            id: item.giveseqid
+          })
+        })
+        const res = JSONParseDecrypt(data)
+        await wait(2653)
+
+        // 判断红包是否有剩余
+        if (!res.data.leftcount) {
+          try {
+            const { data } = await request.post('/ah_red_come/app/sendRedPackage', {
+              para: JSONStringifyEncrypt({
+                queryDate: getFormatTime(),
+                phone: item.token,
+                openid: item.openid
+              })
+            })
+            const resData = JSONParseDecrypt(data)
+            item.giveseqid = resData.data
+            console.log(`${item.nickname}更新红包码`)
+          } catch (error) {
+            console.log(error.message)
+            continue
+          }
+          await wait(1320)
+        }
+
+        let flagid = ''
+        // 拆红包
+        try {
+          const { data } = await request.post('/ah_red_come/app/receiveRed', {
+            para: JSONStringifyEncrypt({
+              queryDate: getFormatTime(),
+              giveseqid: item.giveseqid,
+              phone: user.token
+            })
+          })
+          const resData = JSONParseDecrypt(data)
+          const code = resData.code
+
+          // 过滤
+          if (code === 4) {
+            console.log(resData.msg)
+            continue
+          }
+          if (code === 20) {
+            console.log(resData.msg)
+            break
+          }
+          flagid = resData.data.flagid
+          console.log(`🍿获取:${resData.data.name}`)
+        } catch (error) {
+          console.log(error.message)
+          break
+        }
+        await wait(2398)
+
+        // 领取
+        try {
+          const { data } = await request.post('/ah_red_come/app/receiveRedPackage', {
+            para: JSONStringifyEncrypt({
+              queryDate: getFormatTime(),
+              receiveid: flagid,
+              phone: user.token
+            })
+          })
+          const resData = JSONParseDecrypt(data)
+          console.log(resData.msg)
+        } catch (error) {
+          console.log(error.message)
+          break
+        }
+      } catch (error) {
+        console.log(error.message)
+        break
+      }
+    }
   }
 }
 
@@ -95,6 +234,18 @@ function Encrypt(e) {
   }).ciphertext.toString()
 }
 
-var e = function (e) {
+function e(e) {
   return (e = e.toString())[1] ? e : '0' + e
+}
+
+function getFormatTime() {
+  return dayjs().format('YYYY-MM-DD HH:mm:ss')
+}
+
+function JSONParseDecrypt(data) {
+  return JSON.parse(Decrypt(data))
+}
+
+function JSONStringifyEncrypt(data) {
+  return Encrypt(JSON.stringify(data))
 }
