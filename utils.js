@@ -8,3 +8,11 @@ exports.wait = async second => {
     setTimeout(() => resolve(), second)
   })
 }
+
+/**
+ *
+ * @param {number} i
+ */
+exports.userStartLog = i => {
+  console.log(`\n🚗========第${i}个账号========\n`)
+}

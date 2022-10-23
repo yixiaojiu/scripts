@@ -65,6 +65,10 @@ async function main() {
       })
 
       const res = JSONParseDecrypt(data)
+      if (res.code === 10012) {
+        console.log(res.msg)
+        continue
+      }
       const nickname = res.data.nickname
       console.log(`🍚昵称:${nickname}`)
       user.openid = res.data.openid
