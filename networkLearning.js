@@ -3,16 +3,17 @@
  * 环境变量: studentId="学号@学号", 多账号用@分割
  * cron: 11 1 7,17 * * *
  */
-
 const $ = new Env('第二课堂成绩单')
+const Axios = require('axios')
+
 // require('dotenv').config()
 const { log } = console
-const axios = require('axios').default.create({
+const axios = Axios.create({
   baseURL: 'https://dekt.hfut.edu.cn',
   headers: {
     'User-Agent':
-      'Mozilla/5.0 (Linux; Android 9; SM-G977N Build/LMY48Z; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/92.0.4515.131 Mobile Safari/537.36 MMWEBID/6404 MicroMessenger/8.0.25.2200(0x28001953) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64 MiniProgramEnv/android'
-  }
+      'Mozilla/5.0 (Linux; Android 9; SM-G977N Build/LMY48Z; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/92.0.4515.131 Mobile Safari/537.36 MMWEBID/6404 MicroMessenger/8.0.25.2200(0x28001953) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64 MiniProgramEnv/android',
+  },
 })
 
 const studentId = process.env.studentId
@@ -58,7 +59,12 @@ async function task(user) {
   let finish = false
 
   while (!finish) {
-    const { success, data: res } = await getArticles(user, page, size, columnType)
+    const { success, data: res } = await getArticles(
+      user,
+      page,
+      size,
+      columnType
+    )
     if (!success) {
       log('🚑获取文章出错')
       break
@@ -92,19 +98,22 @@ async function handleList(user, list) {
     if (article.correct === '已完成') {
       continue
     }
-    const { success: getQuestionSuccess, data } = await getQuestion(user, article.id)
+    const { success: getQuestionSuccess, data } = await getQuestion(
+      user,
+      article.id
+    )
     if (!getQuestionSuccess) {
       log('🚑获取问题出错')
       return {
         success: false,
-        error: true
+        error: true,
       }
     }
     if (data.todayReach) {
       log('今天任务已经完成')
       return {
         success: true,
-        error: false
+        error: false,
       }
     }
     if (data.questions.length !== 1) {
@@ -118,7 +127,7 @@ async function handleList(user, list) {
       if (!result) {
         return {
           success: false,
-          error: true
+          error: true,
         }
       }
     } else {
@@ -126,7 +135,7 @@ async function handleList(user, list) {
       if (!result) {
         return {
           success: false,
-          error: true
+          error: true,
         }
       }
     }
@@ -135,14 +144,16 @@ async function handleList(user, list) {
   }
   return {
     success: false,
-    error: false
+    error: false,
   }
 }
 
 async function handleSingleChoice(user, question) {
   const optionList = question.optionList
   for (const option of optionList) {
-    const { success, data } = await submitAnswers(user, question.id, [option.id])
+    const { success, data } = await submitAnswers(user, question.id, [
+      option.id,
+    ])
     if (!success) {
       log('🚑提交答案出错')
       return false
@@ -158,7 +169,10 @@ async function handleSingleChoice(user, question) {
 async function handleMultipleChoice(user, question) {
   const answers = question.optionList.map(option => option.id)
   const reg = /（）*/g
-  if (!question.queContent.match(reg) || question.queContent.match(reg).length !== answers.length) {
+  if (
+    !question.queContent.match(reg) ||
+    question.queContent.match(reg).length !== answers.length
+  ) {
     return true
   }
   const { success, data } = await submitAnswers(user, question.id, answers)
@@ -172,26 +186,29 @@ async function handleMultipleChoice(user, question) {
 
 async function getScore(user) {
   try {
-    const { data } = await axios.get('/scReports/api/wx/uc/learningScore/sum/-1', {
-      headers: {
-        key_session: user
+    const { data } = await axios.get(
+      '/scReports/api/wx/uc/learningScore/sum/-1',
+      {
+        headers: {
+          key_session: user,
+        },
       }
-    })
+    )
     if (data.errMsg === '微信号未绑定用户') {
       return {
         success: false,
-        data: null
+        data: null,
       }
     }
     return {
       success: true,
-      data
+      data,
     }
   } catch (error) {
     log(error)
     return {
       success: false,
-      data: null
+      data: null,
     }
   }
 }
@@ -202,63 +219,70 @@ async function getArticles(user, page, size, columnType) {
       `/scReports/api/wx/netlearning/page/${page}/${size}`,
       {
         category: '',
-        columnType
+        columnType,
       },
       {
         headers: {
-          key_session: user
-        }
+          key_session: user,
+        },
       }
     )
     return {
       success: true,
-      data
+      data,
     }
   } catch (error) {
     log(error)
     return {
       success: false,
-      data: null
+      data: null,
     }
   }
 }
 
 async function getQuestion(user, id) {
   try {
-    const { data } = await axios.get(`/scReports/api/wx/netlearning/questions/${id}`, {
-      headers: {
-        key_session: user
+    const { data } = await axios.get(
+      `/scReports/api/wx/netlearning/questions/${id}`,
+      {
+        headers: {
+          key_session: user,
+        },
       }
-    })
+    )
     return {
       success: true,
-      data: data.data
+      data: data.data,
     }
   } catch (error) {
     log(error)
     return {
       success: false,
-      data: null
+      data: null,
     }
   }
 }
 
 async function submitAnswers(user, id, answers) {
   try {
-    const { data } = await axios.post(`/scReports/api/wx/netlearning/answer/${id}`, answers, {
-      headers: {
-        key_session: user
+    const { data } = await axios.post(
+      `/scReports/api/wx/netlearning/answer/${id}`,
+      answers,
+      {
+        headers: {
+          key_session: user,
+        },
       }
-    })
+    )
     return {
       success: true,
-      data: data.data
+      data: data.data,
     }
   } catch (error) {
     log(error)
     return {
       success: false,
-      data: null
+      data: null,
     }
   }
 }

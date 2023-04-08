@@ -4,6 +4,8 @@
  */
 const $ = new Env('流量来啦')
 
+const axios = require('axios')
+
 // require('dotenv').config()
 const { wait } = require('./utils')
 const dayjs = require('dayjs')
@@ -11,14 +13,14 @@ const t = require('./aes.js')
 const r = t.enc.Utf8.parse('hbdxWxSmall96548')
 const n = t.enc.Utf8.parse('6606136474185246')
 
-const request = require('axios').default.create({
+const request = axios.create({
   baseURL: 'https://llhb.ah163.net',
   headers: {
     'User-Agent':
       'Mozilla/5.0 (Linux; Android 9; MI 6X Build/PKQ1.180904.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/86.0.4240.99 XWEB/4317 MMWEBSDK/20220805 Mobile Safari/537.36 MMWEBID/6404 MicroMessenger/8.0.27.2220(0x28001B59) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64 MiniProgramEnv/android',
     Referer: 'https://servicewechat.com/wx1f62ea786b9aaf30/136/page-frame.html',
-    Host: 'llhb.ah163.net'
-  }
+    Host: 'llhb.ah163.net',
+  },
 })
 
 const para = process.env.llllpara
@@ -60,8 +62,8 @@ async function main() {
       const { data } = await request.post('/ah_red_come/app/getuser', {
         para: JSONStringifyEncrypt({
           queryDate: getFormatTime(),
-          phone: token
-        })
+          phone: token,
+        }),
       })
 
       const res = JSONParseDecrypt(data)
@@ -84,8 +86,8 @@ async function main() {
       const { data } = await request.post('/ah_red_come/app/userSign', {
         para: JSONStringifyEncrypt({
           queryDate: getFormatTime(),
-          phone: token
-        })
+          phone: token,
+        }),
       })
 
       const res = JSONParseDecrypt(data)
@@ -102,8 +104,8 @@ async function main() {
         para: JSONStringifyEncrypt({
           queryDate: getFormatTime(),
           phone: token,
-          openid: user.openid
-        })
+          openid: user.openid,
+        }),
       })
       const res = JSONParseDecrypt(data)
       user.giveseqid = res.data
@@ -133,25 +135,31 @@ async function main() {
       }
 
       try {
-        const { data } = await request.post('/ah_red_come/app/getRedPackageById', {
-          para: JSONStringifyEncrypt({
-            queryDate: getFormatTime(),
-            id: item.giveseqid
-          })
-        })
+        const { data } = await request.post(
+          '/ah_red_come/app/getRedPackageById',
+          {
+            para: JSONStringifyEncrypt({
+              queryDate: getFormatTime(),
+              id: item.giveseqid,
+            }),
+          }
+        )
         const res = JSONParseDecrypt(data)
         await wait(2653)
 
         // 判断红包是否有剩余
         if (!res.data.leftcount) {
           try {
-            const { data } = await request.post('/ah_red_come/app/sendRedPackage', {
-              para: JSONStringifyEncrypt({
-                queryDate: getFormatTime(),
-                phone: item.token,
-                openid: item.openid
-              })
-            })
+            const { data } = await request.post(
+              '/ah_red_come/app/sendRedPackage',
+              {
+                para: JSONStringifyEncrypt({
+                  queryDate: getFormatTime(),
+                  phone: item.token,
+                  openid: item.openid,
+                }),
+              }
+            )
             const resData = JSONParseDecrypt(data)
             item.giveseqid = resData.data
             console.log(`${item.nickname}更新红包码`)
@@ -169,8 +177,8 @@ async function main() {
             para: JSONStringifyEncrypt({
               queryDate: getFormatTime(),
               giveseqid: item.giveseqid,
-              phone: user.token
-            })
+              phone: user.token,
+            }),
           })
           const resData = JSONParseDecrypt(data)
           const code = resData.code
@@ -194,13 +202,16 @@ async function main() {
 
         // 领取
         try {
-          const { data } = await request.post('/ah_red_come/app/receiveRedPackage', {
-            para: JSONStringifyEncrypt({
-              queryDate: getFormatTime(),
-              receiveid: flagid,
-              phone: user.token
-            })
-          })
+          const { data } = await request.post(
+            '/ah_red_come/app/receiveRedPackage',
+            {
+              para: JSONStringifyEncrypt({
+                queryDate: getFormatTime(),
+                receiveid: flagid,
+                phone: user.token,
+              }),
+            }
+          )
           const resData = JSONParseDecrypt(data)
           console.log(resData.msg)
         } catch (error) {
@@ -223,7 +234,7 @@ function Decrypt(e) {
   return t.AES.decrypt(o, r, {
     iv: n,
     mode: t.mode.CBC,
-    padding: t.pad.Pkcs7
+    padding: t.pad.Pkcs7,
   })
     .toString(t.enc.Utf8)
     .toString()
@@ -234,7 +245,7 @@ function Encrypt(e) {
   return t.AES.encrypt(a, r, {
     iv: n,
     mode: t.mode.CBC,
-    padding: t.pad.Pkcs7
+    padding: t.pad.Pkcs7,
   }).ciphertext.toString()
 }
 

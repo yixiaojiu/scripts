@@ -3,17 +3,17 @@
  * 环境变量: qndxxToken="token@token", 多账号用@分割
  * cron: 10 5 8 * * *
  */
-
 const $ = new Env('青年大学习')
+const axios = require('axios')
 
 // require('dotenv').config()
 
-const request = require('axios').default.create({
+const request = axios.create({
   baseURL: 'http://dxx.ahyouth.org.cn',
   headers: {
     'User-Agent':
-      'Mozilla/5.0 (Linux; Android 9; SM-G977N Build/LMY48Z; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/92.0.4515.131 Mobile Safari/537.36 MMWEBID/6404 MicroMessenger/8.0.25.2200(0x28001953) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64 MiniProgramEnv/android'
-  }
+      'Mozilla/5.0 (Linux; Android 9; SM-G977N Build/LMY48Z; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/92.0.4515.131 Mobile Safari/537.36 MMWEBID/6404 MicroMessenger/8.0.25.2200(0x28001953) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64 MiniProgramEnv/android',
+  },
 })
 
 const qndxxToken = process.env.qndxxToken
@@ -32,7 +32,9 @@ async function main() {
   for (const token of tokens) {
     console.log(`\n🚗========第${i}个账号========\n`)
     i++
-    const { data: userInfoData, error: userInfoError } = await getUserInfo(token)
+    const { data: userInfoData, error: userInfoError } = await getUserInfo(
+      token
+    )
     if (userInfoError) {
       continue
     }
@@ -62,7 +64,8 @@ async function main() {
     await wait(2000)
 
     // 获取每日任务
-    const { data: todayTaskData, error: getTodayTaskError } = await getTodayTask(token)
+    const { data: todayTaskData, error: getTodayTaskError } =
+      await getTodayTask(token)
     if (getTodayTaskError) {
       continue
     }
@@ -76,17 +79,17 @@ async function getUserInfo(token) {
   try {
     const { data } = await request.post('/api/userInfo', undefined, {
       headers: {
-        token
-      }
+        token,
+      },
     })
     return {
       data,
-      error: false
+      error: false,
     }
   } catch (err) {
     console.log(err.message)
     return {
-      error: true
+      error: true,
     }
   }
 }
@@ -95,17 +98,17 @@ async function newLearn(token) {
   try {
     const { data } = await request.post('/api/newLearn', undefined, {
       headers: {
-        token
-      }
+        token,
+      },
     })
     console.log('当期学习:' + data.message)
     return {
-      error: false
+      error: false,
     }
   } catch (err) {
     console.log(err.message)
     return {
-      error: true
+      error: true,
     }
   }
 }
@@ -117,18 +120,18 @@ async function oldLearn(token) {
       { id: 203 },
       {
         headers: {
-          token
-        }
+          token,
+        },
       }
     )
     console.log('往期学习:' + data.message)
     return {
-      error: false
+      error: false,
     }
   } catch (err) {
     console.log(err.message)
     return {
-      error: true
+      error: true,
     }
   }
 }
@@ -137,20 +140,20 @@ async function getArticleList(token, page) {
   try {
     const { data } = await request.post('/api/imageTextList', undefined, {
       headers: {
-        token
+        token,
       },
       params: {
-        page
-      }
+        page,
+      },
     })
     return {
       data,
-      error: false
+      error: false,
     }
   } catch (error) {
     console.log(error.message)
     return {
-      error: true
+      error: true,
     }
   }
 }
@@ -162,8 +165,8 @@ async function readArticle(token, id) {
       { id },
       {
         headers: {
-          token
-        }
+          token,
+        },
       }
     )
     console.log('阅读文章成功')
@@ -176,17 +179,17 @@ async function getTodayTask(token) {
   try {
     const { data } = await request.post('/api/todayTask', undefined, {
       headers: {
-        token
-      }
+        token,
+      },
     })
     return {
       data,
-      error: false
+      error: false,
     }
   } catch (error) {
     console.log(error.message)
     return {
-      error: true
+      error: true,
     }
   }
 }
@@ -195,14 +198,17 @@ async function taskReadArticle(token) {
   const { data: firstData, error: firstError } = await getArticleList(token, 1)
   if (firstError) {
     return {
-      error: true
+      error: true,
     }
   }
   await wait(2000)
-  const { data, error } = await getArticleList(token, getRandomInt(1, firstData.lists.last_page))
+  const { data, error } = await getArticleList(
+    token,
+    getRandomInt(1, firstData.lists.last_page)
+  )
   if (error) {
     return {
-      error: true
+      error: true,
     }
   }
   const articleIds = data.lists.data.map(item => item.id)
@@ -218,7 +224,7 @@ async function taskReadArticle(token) {
     await wait(2000)
   }
   return {
-    error: false
+    error: false,
   }
 }
 
